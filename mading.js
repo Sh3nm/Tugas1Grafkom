@@ -5,12 +5,17 @@ var positions = [];
 var colors = [];
 
 var scaleFactor = 1.0;
-var posterAngle = 0.0;
 var isGreen = true;
+var posterAngles = [0.0, 0.0, 0.0]; // rotasi masing-masing poster
 
 var uModelViewLoc;
 
-// Buat mading
+// simpan offset index untuk tiap objek
+var idxStartIsi;
+var idxStartPoster1, idxStartPoster2, idxStartPoster3;
+var posterIndexCount = 6; // 2 segitiga = 6 vertex
+
+// Gambar Mading
 function addRectangle(x1, y1, x2, y2, color) {
     let verts = [
         vec4(x1, y1, 0.0, 1.0),
@@ -26,11 +31,16 @@ function addRectangle(x1, y1, x2, y2, color) {
 }
 
 function addPosters() {
-    // Poster kiri (putih)
-    addRectangle(-0.6, -0.3, -0.3, 0.3, vec4(1.0, 1.0, 1.0, 1.0));
+    // Poster kiri (merah)
+    idxStartPoster1 = positions.length;
+    addRectangle(-0.6, -0.3, -0.3, 0.3, vec4(1.0, 0.0, 0.0, 1.0));
+
     // Poster tengah (biru muda)
+    idxStartPoster2 = positions.length;
     addRectangle(-0.15, -0.3, 0.15, 0.3, vec4(0.6, 0.6, 1.0, 1.0));
+
     // Poster kanan (kuning)
+    idxStartPoster3 = positions.length;
     addRectangle(0.3, -0.3, 0.6, 0.3, vec4(1.0, 1.0, 0.6, 1.0));
 }
 
@@ -46,6 +56,7 @@ function init() {
     addRectangle( 0.8, -0.6, 0.9, 0.6, vec4(0.5, 0.25, 0.1, 1.0)); // kanan
 
     // Isi mading (awal hijau)
+    idxStartIsi = positions.length;
     addRectangle(-0.8, -0.5, 0.8, 0.5, vec4(0.0, 0.6, 0.0, 1.0));
 
     // 3 poster
@@ -82,9 +93,28 @@ function init() {
     document.getElementById("scaleSlider").oninput = function(e) {
         scaleFactor = parseFloat(e.target.value);
     };
-    document.getElementById("rotateSlider").oninput = function(e) {
-        posterAngle = parseFloat(e.target.value);
+    document.getElementById("rotatePoster1").oninput = function(e) {
+        posterAngles[0] = parseFloat(e.target.value);
     };
+    document.getElementById("rotatePoster2").oninput = function(e) {
+        posterAngles[1] = parseFloat(e.target.value);
+    };
+    document.getElementById("rotatePoster3").oninput = function(e) {
+        posterAngles[2] = parseFloat(e.target.value);
+    };
+
+    // Tombol Reset
+    document.getElementById("resetBtn").onclick = function(){
+        isGreen = true;
+        scaleFactor = 1.0;
+        posterAngles = [0.0, 0.0, 0.0];
+    }
+
+    // Reset Slidernya jadi gak bingung
+    document.getElementById("scaleSlider").value = 1.0;
+    document.getElementById("rotatePoster1").value = 0;
+    document.getElementById("rotatePoster2").value = 0;
+    document.getElementById("rotatePoster3").value = 0;
 
     render();
 }
@@ -92,14 +122,12 @@ function init() {
 function render() {
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    let mv = mat4();
-    mv = mult(mv, scale(scaleFactor, scaleFactor, 1.0));
-    gl.uniformMatrix4fv(uModelViewLoc, false, flatten(mv));
+    let mvBase = mat4();
+    mvBase = mult(mvBase, scale(scaleFactor, scaleFactor, 1.0));
 
     // Update warna isi mading
-    let idxStart = 4*6; // setelah bingkai (4 rect x 6 vertex)
     let newColor = isGreen ? vec4(0.0, 0.6, 0.0, 1.0) : vec4(1.0, 1.0, 1.0, 1.0);
-    for (let i = idxStart; i < idxStart+6; i++) colors[i] = newColor;
+    for (let i = idxStartIsi; i < idxStartIsi+6; i++) colors[i] = newColor;
 
     // Update buffer warna
     var cBuffer = gl.createBuffer();
@@ -110,13 +138,24 @@ function render() {
     gl.vertexAttribPointer(colorLoc, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(colorLoc);
 
-    // Rotasi poster
-    let posterStart = idxStart + 6;
-    let mvPoster = mult(mv, rotateZ(posterAngle));
-    gl.uniformMatrix4fv(uModelViewLoc, false, flatten(mvPoster));
+    // Gambar frame + isi mading (semua sebelum poster 1)
+    gl.uniformMatrix4fv(uModelViewLoc, false, flatten(mvBase));
+    gl.drawArrays(gl.TRIANGLES, 0, idxStartPoster1);
 
-    // Gambar semua
-    gl.drawArrays(gl.TRIANGLES, 0, positions.length);
+    // Gambar poster 1
+    let mv1 = mult(mvBase, rotateZ(posterAngles[0]));
+    gl.uniformMatrix4fv(uModelViewLoc, false, flatten(mv1));
+    gl.drawArrays(gl.TRIANGLES, idxStartPoster1, posterIndexCount);
+
+    // Gambar poster 2
+    let mv2 = mult(mvBase, rotateZ(posterAngles[1]));
+    gl.uniformMatrix4fv(uModelViewLoc, false, flatten(mv2));
+    gl.drawArrays(gl.TRIANGLES, idxStartPoster2, posterIndexCount);
+
+    // Gambar poster 3
+    let mv3 = mult(mvBase, rotateZ(posterAngles[2]));
+    gl.uniformMatrix4fv(uModelViewLoc, false, flatten(mv3));
+    gl.drawArrays(gl.TRIANGLES, idxStartPoster3, posterIndexCount);
 
     requestAnimationFrame(render);
 }
