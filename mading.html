@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<body>
+<canvas id="gl-canvas" width="512" height="512"></canvas>
+
+<div style="margin-top: 20px;">
+  <!-- Ganti warna -->
+  <button id="toggleColor">Ganti Warna Isi Mading</button>
+
+  <!--  Gedein mading -->
+  <label for="scaleSlider">Ukuran Mading:</label>
+  <input type="range" id="scaleSlider" min="0.5" max="2.0" step="0.1" value="1">
+
+  <!-- Ni harusnya rotasai poster tapi masih tak fix -->
+  <label for="rotateSlider">Rotasi Poster:</label>
+  <input type="range" id="rotateSlider" min="-180" max="180" step="5" value="0">
+</div>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+#version 300 es
+in  vec4 aPosition;
+in  vec4 aColor;
+out vec4 vColor;
+
+uniform mat4 uModelView;
+
+void main() {
+    vColor = aColor;
+    gl_Position = uModelView * aPosition;
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+#version 300 es
+precision mediump float;
+in vec4 vColor;
+out vec4 fColor;
+
+void main() {
+    fColor = vColor;
+}
+</script>
+
+<script src="initShaders.js"></script>
+<script src="MVnew.js"></script>
+<script src="mading.js"></script>
+</body>
+</html>
