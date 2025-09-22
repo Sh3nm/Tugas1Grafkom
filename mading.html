@@ -19,108 +19,122 @@
     <canvas id="gl-canvas" width="600" height="600"></canvas>
 
     <div class="controls">
-    <button id="toggleColor">Toggle Isi Mading (Hijau / Hitam)</button><br>
+      <button id="toggleColor">Toggle Isi Mading (Hijau / Hitam)</button><br><br>
 
-    <label>Scale Mading:</label>
-    <input type="range" id="scaleSlider" min="0.5" max="2.0" step="0.1" value="1"><br>
+      <label>Scale Mading:</label>
+      <input type="range" id="scaleSlider" min="0.5" max="2.0" step="0.1" value="1"><br><br>
 
-    <label>Rotasi Mading X:</label>
-    <input type="range" id="rotateX" min="-180" max="180" step="5" value="0"><br>
-    <label>Rotasi Mading Y:</label>
-    <input type="range" id="rotateY" min="-180" max="180" step="5" value="0"><br>
-    <label>Rotasi Mading Z:</label>
-    <input type="range" id="rotateZ" min="-180" max="180" step="5" value="0"><br>
+      <label>Rotasi Mading X:</label>
+      <input type="range" id="rotateX" min="-180" max="180" step="5" value="0"><br>
+      <label>Rotasi Mading Y:</label>
+      <input type="range" id="rotateY" min="-180" max="180" step="5" value="0"><br>
+      <label>Rotasi Mading Z:</label>
+      <input type="range" id="rotateZ" min="-180" max="180" step="5" value="0"><br><br>
 
-    <!-- Translasi tombol -->
-    <h4>Translasi Mading</h4>
-    <button id="btnLeft">Kiri</button>
-    <button id="btnRight">Kanan</button>
-    <button id="btnUp">Atas</button>
-    <button id="btnDown">Bawah</button><br>
+      <!-- Translasi tombol -->
+      <h4>Translasi Mading</h4>
+      <button id="btnLeft">Kiri</button>
+      <button id="btnRight">Kanan</button>
+      <button id="btnUp">Atas</button>
+      <button id="btnDown">Bawah</button><br><br>
 
-    <!-- Rotasi otomatis -->
-    <h4>Rotasi Otomatis</h4>
-    <button id="btnNoRotate">Stop</button>
-    <button id="btnRotateX">Auto Rotasi X</button>
-    <button id="btnRotateY">Auto Rotasi Y</button>
-    <button id="btnRotateZ">Auto Rotasi Z</button><br>
+      <!-- Rotasi otomatis -->
+      <h4>Rotasi Otomatis</h4>
+      <button id="btnNoRotate">Stop</button>
+      <button id="btnRotateX">Auto Rotasi X</button>
+      <button id="btnRotateY">Auto Rotasi Y</button>
+      <button id="btnRotateZ">Auto Rotasi Z</button><br>
+      <label>Kecepatan Rotasi:
+          <input type="range" id="speedSlider" min="0" max="5" step="0.1" value="0">
+      </label><br><br>
 
-    <label>Kecepatan Rotasi:
-        <input type="range" id="speedSlider" min="0" max="5" step="0.1" value="0">
-    </label><br>
+      <hr>
 
-    <hr>
+      <!-- Rotasi Poster -->
+      <h4>Rotasi Poster 1</h4>
+      <label>X:</label>
+      <input type="range" id="rotatePoster1X" min="-180" max="180" step="5" value="0"><br>
+      <label>Y:</label>
+      <input type="range" id="rotatePoster1Y" min="-180" max="180" step="5" value="0"><br>
+      <label>Z:</label>
+      <input type="range" id="rotatePoster1Z" min="-180" max="180" step="5" value="0"><br><br>
 
-    <label>Rotasi Poster 1:</label>
-    <input type="range" id="rotatePoster1" min="-180" max="180" step="5" value="0"><br>
-    <label>Rotasi Poster 2:</label>
-    <input type="range" id="rotatePoster2" min="-180" max="180" step="5" value="0"><br>
-    <label>Rotasi Poster 3:</label>
-    <input type="range" id="rotatePoster3" min="-180" max="180" step="5" value="0"><br>
+      <h4>Rotasi Poster 2</h4>
+      <label>X:</label>
+      <input type="range" id="rotatePoster2X" min="-180" max="180" step="5" value="0"><br>
+      <label>Y:</label>
+      <input type="range" id="rotatePoster2Y" min="-180" max="180" step="5" value="0"><br>
+      <label>Z:</label>
+      <input type="range" id="rotatePoster2Z" min="-180" max="180" step="5" value="0"><br><br>
 
-    <button id="resetBtn">Reset</button>
-</div>
+      <h4>Rotasi Poster 3</h4>
+      <label>X:</label>
+      <input type="range" id="rotatePoster3X" min="-180" max="180" step="5" value="0"><br>
+      <label>Y:</label>
+      <input type="range" id="rotatePoster3Y" min="-180" max="180" step="5" value="0"><br>
+      <label>Z:</label>
+      <input type="range" id="rotatePoster3Z" min="-180" max="180" step="5" value="0"><br><br>
 
+      <button id="resetBtn">Reset</button>
+    </div>
+  </div>
 
   <div class="photos">
     <img src="Images/MadingDariDekat.JPG" alt="Foto dekat mading" width="300">
     <img src="Images/MadingDariJauh.jpeg" alt="Foto jauh mading" width="300">
   </div>
 
+  <!-- Shaders -->
   <script id="vertex-shader" type="x-shader/x-vertex">
-#version 300 es
+  #version 300 es
 
-in  vec4 aPosition;
-in  vec4 aColor;
-out vec4 vColor;
+  in  vec4 aPosition;
+  in  vec4 aColor;
+  out vec4 vColor;
 
-uniform vec3 uTheta;
-uniform mat4 uModelView;
+  uniform vec3 uTheta;
+  uniform mat4 uModelView;
 
-void main()
-{
+  void main()
+  {
+      vec3 angles = radians(uTheta);
+      vec3 c = cos(angles);
+      vec3 s = sin(angles);
 
-    vec3 angles = radians(uTheta);
-    vec3 c = cos(angles);
-    vec3 s = sin(angles);
+      mat4 rx = mat4(1.0,  0.0,  0.0, 0.0,
+                     0.0,  c.x,  s.x, 0.0,
+                     0.0, -s.x,  c.x, 0.0,
+                     0.0,  0.0,  0.0, 1.0);
 
-    // Remeber: thse matrices are column-major
-    mat4 rx = mat4(1.0,  0.0,  0.0, 0.0,
-    0.0,  c.x,  s.x, 0.0,
-    0.0, -s.x,  c.x, 0.0,
-    0.0,  0.0,  0.0, 1.0);
+      mat4 ry = mat4(c.y, 0.0, -s.y, 0.0,
+                     0.0, 1.0,  0.0, 0.0,
+                     s.y, 0.0,  c.y, 0.0,
+                     0.0, 0.0,  0.0, 1.0);
 
-    mat4 ry = mat4(c.y, 0.0, -s.y, 0.0,
-    0.0, 1.0,  0.0, 0.0,
-    s.y, 0.0,  c.y, 0.0,
-    0.0, 0.0,  0.0, 1.0);
+      mat4 rz = mat4(c.z,  s.z, 0.0, 0.0,
+                    -s.z,  c.z, 0.0, 0.0,
+                     0.0,  0.0, 1.0, 0.0,
+                     0.0,  0.0, 0.0, 1.0);
 
-    mat4 rz = mat4(
-    c.z,  s.z, 0.0, 0.0,
-   -s.z,  c.z, 0.0, 0.0,
-    0.0, 0.0, 1.0, 0.0,
-    0.0, 0.0, 0.0, 1.0);
+      vColor = aColor;
+      gl_Position = uModelView * rz * ry * rx * aPosition;
+      gl_Position.z = -gl_Position.z;
+  }
+  </script>
 
-    vColor = aColor;
-    gl_Position = uModelView * rz * ry * rx * aPosition;
-    gl_Position.z = -gl_Position.z;
-}
-</script>
+  <script id="fragment-shader" type="x-shader/x-fragment">
+  #version 300 es
 
-<script id="fragment-shader" type="x-shader/x-fragment">
-#version 300 es
+  precision mediump float;
 
-precision mediump float;
+  in vec4 vColor;
+  out vec4 fColor;
 
-in vec4 vColor;
-out vec4 fColor;
-
-void
-main()
-{
-    fColor = vColor;
-}
-</script>
+  void main()
+  {
+      fColor = vColor;
+  }
+  </script>
 
   <script src="initShaders.js"></script>
   <script src="MVnew.js"></script>
