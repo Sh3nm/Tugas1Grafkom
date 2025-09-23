@@ -29,6 +29,18 @@ var posterIndexCount = 36;
 var baseIsi;
 
 // =======================
+// Kamera & Proyeksi
+// =======================
+var eye = vec3(0, 0, 3);     // posisi kamera default
+var at  = vec3(0, 0, 0);     // titik fokus
+var up  = vec3(0, 1, 0);     // arah atas
+
+var projectionType = "perspective"; // default
+var fovy = 45;
+var near = 0.1;
+var far  = 10.0;
+
+// =======================
 // Utility Functions
 // =======================
 function addCuboid(x1, y1, z1, x2, y2, z2, color) {
@@ -90,7 +102,7 @@ function init() {
     addCuboid(0.85, -0.6, -0.1, 0.9, 0.6, 0.1, vec4(0.5,0.25,0.1,1.0)); // kanan
 
     // Isi mading
-    baseIsi = vertices.length; // simpan base vertex index
+    baseIsi = vertices.length;
     idxStartIsi = indices.length;
     addCuboid(-0.85,-0.55,-0.05, 0.85,0.55,0.05, vec4(0.0,0.6,0.0,1.0));
     isiIndexCount = indices.length - idxStartIsi;
@@ -165,6 +177,16 @@ function init() {
     document.getElementById("rotatePoster3Y").oninput = e => posterAnglesY[2] = parseFloat(e.target.value);
     document.getElementById("rotatePoster3Z").oninput = e => posterAnglesZ[2] = parseFloat(e.target.value);
 
+    // =======================
+    // New Controls: Camera & Projection
+    // =======================
+    document.getElementById("projectionSelect").onchange = e => {
+        projectionType = e.target.value;
+    };
+    document.getElementById("eyeX").oninput = e => eye[0] = parseFloat(e.target.value);
+    document.getElementById("eyeY").oninput = e => eye[1] = parseFloat(e.target.value);
+    document.getElementById("eyeZ").oninput = e => eye[2] = parseFloat(e.target.value);
+
     // reset
     document.getElementById("resetBtn").onclick = () => {
         isGreen = true;
@@ -176,6 +198,9 @@ function init() {
         posterAnglesZ = [0,0,0];
         rotationMode = "none";
         rotationSpeed = 0.0;
+
+        eye = vec3(0,0,3);
+        projectionType = "perspective";
 
         // reset slider UI
         document.getElementById("scaleSlider").value = 1.0;
@@ -195,6 +220,11 @@ function init() {
         document.getElementById("rotatePoster3X").value = 0.0;
         document.getElementById("rotatePoster3Y").value = 0.0;
         document.getElementById("rotatePoster3Z").value = 0.0;
+
+        document.getElementById("projectionSelect").value = "perspective";
+        document.getElementById("eyeX").value = 0.0;
+        document.getElementById("eyeY").value = 0.0;
+        document.getElementById("eyeZ").value = 3.0;
     };
 
     render();
@@ -206,9 +236,16 @@ function init() {
 function render() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    // kamera
-    let proj = perspective(45, canvas.width/canvas.height, 0.1, 10.0);
-    let view = lookAt(vec3(0,0,3), vec3(0,0,0), vec3(0,1,0));
+    // Pilihan proyeksi
+    let proj;
+    if (projectionType === "perspective") {
+        proj = perspective(fovy, canvas.width/canvas.height, near, far);
+    } else {
+        proj = ortho(-2, 2, -2, 2, near, far);
+    }
+
+    // Kamera
+    let view = lookAt(eye, at, up);
     let mvBase = mult(proj, view);
 
     // translasi + skala
