@@ -5,6 +5,7 @@
   <title>Mading Teknik Informatika</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
   <div class="title-card">
     <h1>Mading Teknik Informatika</h1>
@@ -23,10 +24,12 @@
 
     <!-- Panel Kontrol -->
     <div class="controls">
+      <h3>Kontrol Dasar</h3>
       <button id="toggleColor">Toggle Isi Mading (Hijau / Hitam)</button><br><br>
+      <button id="toggleTexture">Toggle Texture (Checkerboard / Gambar)</button><br><br>
 
       <label>Scale Mading:</label>
-      <input type="range" id="scaleSlider" min="0.5" max="2.0" step="0.1" value="1"><br>
+      <input type="range" id="scaleSlider" min="0.5" max="2.0" step="0.1" value="1"><br><br>
 
       <label>Rotasi Mading X:</label>
       <input type="range" id="rotateX" min="-180" max="180" step="5" value="0"><br>
@@ -47,28 +50,28 @@
       <button id="btnRotateY">Auto Rotasi Y</button>
       <button id="btnRotateZ">Auto Rotasi Z</button><br><br>
 
-      <label>Kecepatan Rotasi:
-        <input type="range" id="speedSlider" min="0" max="5" step="0.1" value="0">
-      </label><br><hr>
+      <label>Kecepatan Rotasi:</label>
+      <input type="range" id="speedSlider" min="0" max="5" step="0.1" value="0"><br><hr>
 
-      <h4>Rotasi Poster 1</h4>
+      <h4>Rotasi Poster</h4>
+      <b>Poster 1</b><br>
       X: <input type="range" id="rotatePoster1X" min="-180" max="180" step="5" value="0"><br>
       Y: <input type="range" id="rotatePoster1Y" min="-180" max="180" step="5" value="0"><br>
       Z: <input type="range" id="rotatePoster1Z" min="-180" max="180" step="5" value="0"><br>
 
-      <h4>Rotasi Poster 2</h4>
+      <b>Poster 2</b><br>
       X: <input type="range" id="rotatePoster2X" min="-180" max="180" step="5" value="0"><br>
       Y: <input type="range" id="rotatePoster2Y" min="-180" max="180" step="5" value="0"><br>
       Z: <input type="range" id="rotatePoster2Z" min="-180" max="180" step="5" value="0"><br>
 
-      <h4>Rotasi Poster 3</h4>
+      <b>Poster 3</b><br>
       X: <input type="range" id="rotatePoster3X" min="-180" max="180" step="5" value="0"><br>
       Y: <input type="range" id="rotatePoster3Y" min="-180" max="180" step="5" value="0"><br>
       Z: <input type="range" id="rotatePoster3Z" min="-180" max="180" step="5" value="0"><br><br>
 
       <hr>
       <h4>Pengaturan Kamera & Proyeksi</h4>
-      <label for="projectionSelect">Jenis Proyeksi:</label>
+      <label>Jenis Proyeksi:</label>
       <select id="projectionSelect">
         <option value="perspective" selected>Perspective</option>
         <option value="orthographic">Orthographic</option>
@@ -107,28 +110,36 @@
     </div>
   </div>
 
-  <!-- Shader & Script -->
+  <!-- ====================== -->
+  <!-- Shader + Script -->
+  <!-- ====================== -->
+
+  <!-- Vertex Shader -->
   <script id="vertex-shader" type="x-shader/x-vertex">
   #version 300 es
   in vec4 aPosition;
   in vec4 aColor;
   in vec3 aNormal;
+  in vec2 aTexCoord;
 
   out vec3 vNormal;
   out vec3 vPosition;
   out vec4 vColor;
+  out vec2 vTexCoord;
 
-  uniform mat4 uModelViewProjection;
   uniform mat4 uModelView;
+  uniform mat4 uModelViewProjection;
 
   void main() {
       vColor = aColor;
       vNormal = mat3(uModelView) * aNormal;
       vPosition = (uModelView * aPosition).xyz;
+      vTexCoord = aTexCoord;
       gl_Position = uModelViewProjection * aPosition;
   }
   </script>
 
+  <!-- Fragment Shader -->
   <script id="fragment-shader" type="x-shader/x-fragment">
   #version 300 es
   precision mediump float;
@@ -136,6 +147,7 @@
   in vec3 vNormal;
   in vec3 vPosition;
   in vec4 vColor;
+  in vec2 vTexCoord;
 
   out vec4 fColor;
 
@@ -143,6 +155,9 @@
   uniform vec3 uDiffuseProduct;
   uniform vec3 uSpecularProduct;
   uniform vec3 uLightPosition;
+
+  uniform sampler2D uTexture;
+  uniform bool uUseTexture;
 
   void main() {
       vec3 N = normalize(vNormal);
@@ -157,11 +172,15 @@
       vec3 diffuse = Kd * uDiffuseProduct;
       vec3 specular = Ks * uSpecularProduct;
 
-      vec3 result = (ambient + diffuse + specular) * vColor.rgb;
-      fColor = vec4(result, 1.0);
+      vec3 lighting = ambient + diffuse + specular;
+      vec4 texColor = texture(uTexture, vTexCoord);
+      vec4 baseColor = uUseTexture ? texColor : vColor;
+
+      fColor = vec4(lighting, 1.0) * baseColor;
   }
   </script>
 
+  <!-- Library dan Script -->
   <script src="initShaders.js"></script>
   <script src="MVnew.js"></script>
   <script src="mading.js"></script>
